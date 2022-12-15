@@ -1,23 +1,32 @@
 <script setup lang="ts">
+import { Button as VanButton } from 'vant'
 import { useUserStore } from './stores'
+import type { User } from './types/user'
+import { request } from './utils/request'
 
 const store = useUserStore()
+const login = () => {
+  request<User>('login/password', 'post', {
+    mobile: '13211112222',
+    password: 'abc12345'
+  })
+    .then((res) => {
+      store.setUser(res.data)
+    })
+    .catch((err) => {
+      // 报错
+      console.log(err)
+    })
+}
+
+const getUserInfo = () => {
+  request('patient/myUser').then((res) => {
+    console.log(res)
+  })
+}
 </script>
 
 <template>
-  <p>{{ store.user }}</p>
-  <button
-    @click="
-      store.setUser({
-        id: '1',
-        mobile: '1',
-        account: '1',
-        avatar: '1',
-        token: '1'
-      })
-    "
-  >
-    登录
-  </button>
-  <button @click="store.delUser()">退出</button>
+  <van-button type="primary" @click="login">登录</van-button>
+  <van-button type="primary" @click="getUserInfo">用户信息</van-button>
 </template>
