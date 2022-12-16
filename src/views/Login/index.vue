@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { Button as VanButton, Checkbox as VanCheckbox } from 'vant'
+const fn = () => {
+  console.log('组件业务')
+}
 </script>
 
 <template>
-  <div class="login-page">
-    <van-button type="primary">按钮</van-button>
-    <van-checkbox>复选框</van-checkbox>
-  </div>
+  <cp-nav-bar title="登录" rightText="保存" @click-right="fn"></cp-nav-bar>
+  <cp-nav-bar></cp-nav-bar>
 </template>
 
 <style lang="scss" scoped></style>
