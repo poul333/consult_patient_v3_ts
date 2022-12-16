@@ -3,7 +3,6 @@ import router from '@/router'
 import { useUserStore } from '@/stores'
 import axios, { type Method } from 'axios'
 import { showToast } from 'vant'
-import type { User } from '@/types/user'
 
 // 1. axios 的配置
 // 1.1 创建新的axios 实例，配置基准地址，配置响应超时时间
