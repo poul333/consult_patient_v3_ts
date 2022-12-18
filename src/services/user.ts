@@ -1,5 +1,11 @@
 // 用户相关请求模块
-import type { CodeType, PatientList, User, UserInfo } from '@/types/user'
+import type {
+  CodeType,
+  Patient,
+  PatientList,
+  User,
+  UserInfo
+} from '@/types/user'
 import { request } from '@/utils/request'
 
 // 密码登录
@@ -18,3 +24,15 @@ export const getUserInfo = () => request<UserInfo>('patient/myUser')
 
 // 获取家庭档案患者信息
 export const getPatientList = () => request<PatientList>('patient/mylist')
+
+// 添加患者
+export const addPatient = (patient: Patient) =>
+  request('patient/add', 'post', patient)
+
+// 编辑患者
+export const updatePatient = (patient: Patient) =>
+  request('patient/update', 'put', patient)
+
+// 删除患者信息
+export const daletePatient = (id: string) =>
+  request(`patient/del/${id}`, 'DELETE')
