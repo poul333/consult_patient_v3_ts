@@ -14,3 +14,18 @@ export type CodeType =
   | 'changeMobile'
   | 'forgetPassword'
   | 'bindMobile'
+
+// 个人信息
+type OmitUser = Omit<User, 'token'>
+export type UserInfo = OmitUser & {
+  likeNumber: number
+  collectionNumber: number
+  score: number
+  couponNumber: number
+  orderInfo: {
+    paidNumber: number
+    receivedNumber: number
+    shippedNumber: number
+    finishedNumber: number
+  }
+}

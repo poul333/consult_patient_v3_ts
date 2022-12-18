@@ -1,5 +1,5 @@
 // 用户相关请求模块
-import type { CodeType, User } from '@/types/user'
+import type { CodeType, User, UserInfo } from '@/types/user'
 import { request } from '@/utils/request'
 
 // 密码登录
@@ -13,3 +13,5 @@ export const sendMobileCode = (mobile: string, type: CodeType) =>
 //  短信验证码登录
 export const loginByCode = (mobile: string, code: string) =>
   request<User>('login', 'post', { mobile, code })
+
+export const getUserInfo = () => request<UserInfo>('patient/myUser')
