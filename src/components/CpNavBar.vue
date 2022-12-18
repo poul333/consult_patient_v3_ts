@@ -3,9 +3,10 @@
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
-defineProps<{
+const props = defineProps<{
   title?: string
   rightText?: string
+  back?: () => void
 }>()
 
 const emit = defineEmits<{
@@ -14,6 +15,10 @@ const emit = defineEmits<{
 
 const onClickLeft = () => {
   // 实现返回
+
+  // 通过props传递函数控制返回, 如果有传递该函数，则执行该函数逻辑，不执行下面代码
+  if (props.back) return props.back()
+
   // 如果有历史记录，back()返回，没有则返回首页
   if (history.state?.back) {
     router.back()
