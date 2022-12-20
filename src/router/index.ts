@@ -1,5 +1,12 @@
 import { useUserStore } from '@/stores'
 import { createRouter, createWebHistory } from 'vue-router'
+// 加载进度条
+import NProgress from 'nprogress'
+import 'nprogress/nprogress.css'
+
+NProgress.configure({
+  showSpinner: false
+})
 
 // import.meta.env.BASE_URL 路由基准路径  create-vue 脚手架提供的数据(环境变量)
 const router = createRouter({
@@ -47,6 +54,7 @@ const router = createRouter({
 
 // 访问权限控制
 router.beforeEach((to) => {
+  NProgress.start() // 开启加载进度条
   // return true,或啥也不写，就是放行
   // 拦截到某个页面 => return '路由地址'
   const store = useUserStore()
@@ -58,7 +66,8 @@ router.beforeEach((to) => {
 
 // 后置守卫 => 页面标题控制
 router.afterEach((to) => {
-  document.title = `${to.meta.title}-优医问诊`
+  document.title = `${to.meta.title}-优医问诊` || ''
+  NProgress.done() // 关闭加载进度条
 })
 
 export default router

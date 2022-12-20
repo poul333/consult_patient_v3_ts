@@ -64,3 +64,8 @@ ol {
     padding: 0 15px;
   }
 }
+
+// 加载进度条样式修改
+#nprogress .bar {
+  background-color: var(--cp-primary) !important;
+}
