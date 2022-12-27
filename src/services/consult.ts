@@ -5,7 +5,10 @@ import type {
   DoctorPage,
   FollowType,
   TopDep,
-  Image
+  Image,
+  ConsultOrderPreParams,
+  ConsultOrderPreData,
+  PartialConsult
 } from '@/types/consult'
 import { request } from '@/utils/request'
 
@@ -30,3 +33,18 @@ export const uploadImage = (file: File) => {
   fd.append('file', file)
   return request<Image>('upload', 'post', fd)
 }
+
+// 获取生成订单信息，确定金额
+export const getConsultOrderPre = (params: ConsultOrderPreParams) =>
+  request<ConsultOrderPreData>('patient/consult/order/pre', 'get', params)
+
+// 生成订单
+export const createConsultOrder = (data: PartialConsult) =>
+  request<{ id: string }>('patient/consult/order', 'post', data)
+
+// 订单支付
+export const getConsultOrderPayUrl = (data: {
+  paymentMethod: 0 | 1
+  orderId: string
+  payCallback: string
+}) => request<{ payUrl: string }>('patient/consult/pay', 'post', data)
