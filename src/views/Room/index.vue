@@ -9,7 +9,9 @@ import type { Socket } from 'socket.io-client'
 import { baseURL } from '@/utils/request'
 import { useUserStore } from '@/stores'
 import type { TimeMessages, Message } from '@/types/room'
-import { MsgType } from '@/enums/index'
+import { MsgType, OrderType } from '@/enums/index'
+import type { ConsultOrderItem } from '@/types/consult'
+import { getConsultOrderDetail } from '@/services/consult'
 
 const store = useUserStore()
 const route = useRoute()
@@ -64,15 +66,32 @@ onMounted(() => {
     // 将处理好的数据放置list中
     list.value.unshift(...arr)
   })
+  // 等连接成功之后，注册事件，订单状态变更
+  socket.on('statusChange', async () => {
+    const res = await getConsultOrderDetail(route.query.orderId as string)
+    consult.value = res.data
+  })
+})
+
+// 接诊状态
+const consult = ref<ConsultOrderItem>()
+onMounted(async () => {
+  const res = await getConsultOrderDetail(route.query.orderId as string)
+  consult.value = res.data
 })
 </script>
 
 <template>
   <div class="room-page">
     <cp-nav-bar title="问诊室" />
-    <RoomStatus></RoomStatus>
+    <RoomStatus
+      :status="consult?.status"
+      :countdown="consult?.countdown"
+    ></RoomStatus>
     <RoomMessage :list="list"></RoomMessage>
-    <RoomAction></RoomAction>
+    <RoomAction
+      :disabled="consult?.status !== OrderType.ConsultChat"
+    ></RoomAction>
   </div>
 </template>
 

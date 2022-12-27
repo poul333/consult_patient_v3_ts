@@ -12,7 +12,9 @@ export default defineConfig({
   // 默认 / 是基准路径
   // base: '/',
   plugins: [
-    vue(),
+    vue({
+      reactivityTransform: true
+    }),
     // 自动导入的插件，解析器可以是 vant element and-vue
     // 默认自动加载 component 下的组件，通用级别的组件
     Components({
