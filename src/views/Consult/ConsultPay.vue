@@ -110,7 +110,7 @@ const pay = async () => {
       orderId: orderId.value,
       payCallback: 'http://127.0.0.1:5173/room'
     })
-    // 支付成功后回跳地址
+    // 支付地址
     location.href = res.data.payUrl
   }
 }
