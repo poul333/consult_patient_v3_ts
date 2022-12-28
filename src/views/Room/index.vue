@@ -12,6 +12,8 @@ import type { TimeMessages, Message } from '@/types/room'
 import { MsgType, OrderType } from '@/enums/index'
 import type { ConsultOrderItem, Image } from '@/types/consult'
 import { getConsultOrderDetail } from '@/services/consult'
+import dayjs from 'dayjs'
+import { showToast } from 'vant'
 
 const store = useUserStore()
 const route = useRoute()
@@ -37,6 +39,8 @@ onMounted(() => {
   })
   // 连接成功
   socket.on('connect', () => {
+    // 置空消息列表
+    list.value = []
     console.log('连接成功')
   })
   // 关闭连接
@@ -52,7 +56,9 @@ onMounted(() => {
   socket.on('chatMsgList', ({ data }: { data: TimeMessages[] }) => {
     // 处理消息，将分组消息自己组织成一条通用消息，items 取出后放后面
     const arr: Message[] = []
-    data.forEach((item) => {
+    data.forEach((item, i) => {
+      // 记录消息分组第一组的时间，作为下次获取聊天记录的时间
+      if (i === 0) time.value = item.createTime
       arr.push({
         id: item.createTime,
         msgType: MsgType.Notify,
@@ -65,6 +71,21 @@ onMounted(() => {
     })
     // 将处理好的数据放置list中
     list.value.unshift(...arr)
+
+    //关闭下拉loading效果
+    loading.value = false
+
+    if (!data.length) return showToast('没有记录了')
+
+    // 第一次需要滚动到最底部
+    nextTick(() => {
+      if (initialMsg.value) {
+        // 将默认加载到的消息改为已读
+        socket.emit('updateMsgStatus', arr[arr.length - 1].id)
+        window.scrollTo(0, document.body.scrollHeight)
+        initialMsg.value = false
+      }
+    })
   })
   // 等连接成功之后，注册事件，订单状态变更
   socket.on('statusChange', async () => {
@@ -76,6 +97,8 @@ onMounted(() => {
     list.value.push(event)
     // 是一个Promise，等DOM渲染完毕再执行
     await nextTick()
+    // 修改消息为已读
+    socket.emit('updateMsgStatus', event.id)
     // 发送消息滚动到下方
     window.scrollTo(0, document.body.scrollHeight)
   })
@@ -108,6 +131,16 @@ const sendImage = (img: Image) => {
     msg: { picture: img }
   })
 }
+
+// 聊天记录
+// 控制消息滚动到最底部
+const initialMsg = ref(true)
+// 实现下拉刷新
+const time = ref(dayjs().format('YYYY-MM-DD HH:mm:ss'))
+const loading = ref(false)
+const onRefresh = () => {
+  socket.emit('getChatMsgList', 20, time.value, consult.value?.id)
+}
 </script>
 
 <template>
@@ -117,7 +150,9 @@ const sendImage = (img: Image) => {
       :status="consult?.status"
       :countdown="consult?.countdown"
     ></RoomStatus>
-    <RoomMessage :list="list"></RoomMessage>
+    <van-pull-refresh v-model="loading" @refresh="onRefresh">
+      <RoomMessage :list="list"></RoomMessage>
+    </van-pull-refresh>
     <RoomAction
       :disabled="consult?.status !== OrderType.ConsultChat"
       @send-text="sendText"

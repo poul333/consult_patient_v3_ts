@@ -6,6 +6,7 @@ import type { Image } from '@/types/consult'
 import { showImagePreview } from 'vant'
 import { useUserStore } from '@/stores'
 import dayjs from 'dayjs'
+import { getPrescriptionPic } from '@/services/consult'
 
 defineProps<{
   list: Message[]
@@ -29,6 +30,14 @@ const onPreViewImage = (pictures?: Image[]) => {
 
 const store = useUserStore()
 const formatTime = (time: string) => dayjs(time).format('HH:mm')
+
+// 查看处方图片
+const showPrescription = async (id?: string) => {
+  if (id) {
+    const res = await getPrescriptionPic(id)
+    showImagePreview([res.data?.url])
+  }
+}
 </script>
 
 <template>
@@ -123,28 +132,37 @@ const formatTime = (time: string) => dayjs(time).format('HH:mm')
     </div>
 
     <!-- 处方消息 -->
-    <!-- <div class="msg msg-recipe">
-    <div class="content">
-      <div class="head van-hairline--bottom">
-        <div class="head-tit">
-          <h3>电子处方</h3>
-          <p>原始处方 <van-icon name="arrow"></van-icon></p>
-        </div>
-        <p>李富贵 男 31岁 血管性头痛</p>
-        <p>开方时间：2022-01-15 14:21:42</p>
-      </div>
-      <div class="body">
-        <div class="body-item" v-for="i in 2" :key="i">
-          <div class="durg">
-            <p>优赛明 维生素E乳</p>
-            <p>口服，每次1袋，每天3次，用药3天</p>
+    <div class="msg msg-recipe" v-if="msgType === MsgType.CardPre">
+      <div class="content">
+        <div class="head van-hairline--bottom">
+          <div class="head-tit">
+            <h3>电子处方</h3>
+            <p @click="showPrescription(msg.prescription?.id)">
+              原始处方 <van-icon name="arrow"></van-icon>
+            </p>
           </div>
-          <div class="num">x1</div>
+          <p>
+            {{ msg.prescription?.name }} {{ msg.prescription?.genderValue }}
+            {{ msg.prescription?.age }}岁 {{ msg.prescription?.diagnosis }}
+          </p>
+          <p>开方时间：{{ msg.prescription?.createTime }}</p>
         </div>
+        <div class="body">
+          <div
+            class="body-item"
+            v-for="med in msg.prescription?.medicines"
+            :key="med.id"
+          >
+            <div class="durg">
+              <p>{{ med.name }} {{ med.specs }}</p>
+              <p>{{ med.usageDosag }}</p>
+            </div>
+            <div class="num">x{{ med.quantity }}</div>
+          </div>
+        </div>
+        <div class="foot"><span>购买药品</span></div>
       </div>
-      <div class="foot"><span>购买药品</span></div>
     </div>
-  </div> -->
 
     <!-- 订单取消 -->
     <!-- <div class="msg msg-tip msg-tip-cancel">
