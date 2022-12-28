@@ -2,7 +2,7 @@
 import RoomStatus from './components/RoomStatus.vue'
 import RoomAction from './components/RoomAction.vue'
 import RoomMessage from './components/RoomMessage.vue'
-import { onMounted, onUnmounted, ref } from 'vue'
+import { onMounted, onUnmounted, ref, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
 import { io } from 'socket.io-client'
 import type { Socket } from 'socket.io-client'
@@ -10,7 +10,7 @@ import { baseURL } from '@/utils/request'
 import { useUserStore } from '@/stores'
 import type { TimeMessages, Message } from '@/types/room'
 import { MsgType, OrderType } from '@/enums/index'
-import type { ConsultOrderItem } from '@/types/consult'
+import type { ConsultOrderItem, Image } from '@/types/consult'
 import { getConsultOrderDetail } from '@/services/consult'
 
 const store = useUserStore()
@@ -71,6 +71,14 @@ onMounted(() => {
     const res = await getConsultOrderDetail(route.query.orderId as string)
     consult.value = res.data
   })
+  // 接收消息
+  socket.on('receiveChatMsg', async (event: Message) => {
+    list.value.push(event)
+    // 是一个Promise，等DOM渲染完毕再执行
+    await nextTick()
+    // 发送消息滚动到下方
+    window.scrollTo(0, document.body.scrollHeight)
+  })
 })
 
 // 接诊状态
@@ -79,6 +87,27 @@ onMounted(async () => {
   const res = await getConsultOrderDetail(route.query.orderId as string)
   consult.value = res.data
 })
+
+// 发送文字消息
+const sendText = (text: string) => {
+  // 发送信息需要  发送人  收消息人  消息类型  消息内容
+  socket.emit('sendChatMsg', {
+    from: store.user?.id,
+    to: consult.value?.docInfo?.id,
+    msgType: MsgType.MsgText,
+    msg: { content: text }
+  })
+}
+
+// 发送图片消息
+const sendImage = (img: Image) => {
+  socket.emit('sendChatMsg', {
+    from: store.user?.id,
+    to: consult.value?.docInfo?.id,
+    msgType: MsgType.MsgImage,
+    msg: { picture: img }
+  })
+}
 </script>
 
 <template>
@@ -91,6 +120,8 @@ onMounted(async () => {
     <RoomMessage :list="list"></RoomMessage>
     <RoomAction
       :disabled="consult?.status !== OrderType.ConsultChat"
+      @send-text="sendText"
+      @send-image="sendImage"
     ></RoomAction>
   </div>
 </template>
