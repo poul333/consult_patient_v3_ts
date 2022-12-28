@@ -2,7 +2,7 @@
 import RoomStatus from './components/RoomStatus.vue'
 import RoomAction from './components/RoomAction.vue'
 import RoomMessage from './components/RoomMessage.vue'
-import { onMounted, onUnmounted, ref, nextTick } from 'vue'
+import { onMounted, onUnmounted, ref, nextTick, provide } from 'vue'
 import { useRoute } from 'vue-router'
 import { io } from 'socket.io-client'
 import type { Socket } from 'socket.io-client'
@@ -141,6 +141,18 @@ const loading = ref(false)
 const onRefresh = () => {
   socket.emit('getChatMsgList', 20, time.value, consult.value?.id)
 }
+
+provide('consult', consult)
+// 修改评价
+const completeEva = (score: number) => {
+  //  添加评价对象
+  const item = list.value.find((item) => item.msgType === MsgType.CardEvaForm)
+  if (item) {
+    item.msg.evaluateDoc = { score }
+    item.msgType = MsgType.CardEva
+  }
+}
+provide('completeEva', completeEva)
 </script>
 
 <template>
