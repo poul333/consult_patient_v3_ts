@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import type { ConsultOrderItem } from '@/types/consult'
 import { getConsultOrderDetail } from '@/services/consult'
@@ -10,6 +10,8 @@ import {
   useDeleteOrder,
   useShowPrescription
 } from '@/composable'
+import { useClipboard } from '@vueuse/core'
+import { showSuccessToast, showToast } from 'vant'
 
 const route = useRoute()
 const router = useRouter()
@@ -29,6 +31,21 @@ const { loading: delLoading, deleteConsultOrder } = useDeleteOrder(() => {
 
 // 查看处方
 const { showPrescription } = useShowPrescription()
+
+// 复制功能
+// 从vueuse得到数据和函数
+const { copy, copied, isSupported } = useClipboard()
+// 点击复制按钮
+const onCopy = () => {
+  // 判断
+  if (!isSupported.value) return showToast('未授权')
+  // 进行复制
+  copy(item.value?.orderNo as string)
+}
+// 复制成功后提示
+watch(copied, () => {
+  if (copied.value) return showSuccessToast('复制成功')
+})
 </script>
 
 <template>
@@ -78,8 +95,8 @@ const { showPrescription } = useShowPrescription()
       <van-cell-group :border="false">
         <van-cell title="订单编号">
           <template #value>
-            <span class="copy">复制</span>
-            202201127465
+            <span class="copy" @click="onCopy">复制</span>
+            {{ item.orderNo }}
           </template>
         </van-cell>
         <van-cell title="创建时间" :value="item.createTime" />
