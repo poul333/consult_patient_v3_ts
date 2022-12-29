@@ -1,12 +1,13 @@
 <script setup lang="ts">
-import { ref } from 'vue'
 import { OrderType } from '@/enums'
 import type { ConsultOrderItem } from '@/types/consult'
-import { cancelOrder, deleteOrder } from '@/services/consult'
-import { showFailToast, showSuccessToast } from 'vant'
-import { useShowPrescription } from '@/composable'
+import {
+  useCancelOrder,
+  useDeleteOrder,
+  useShowPrescription
+} from '@/composable'
 
-defineProps<{
+const props = defineProps<{
   item: ConsultOrderItem
 }>()
 const { showPrescription } = useShowPrescription()
@@ -28,39 +29,43 @@ const { showPrescription } = useShowPrescription()
 // }
 
 // 取消订单
-const loading = ref(false)
-const cancelConsultOrder = async (item: ConsultOrderItem) => {
-  loading.value = true
-  try {
-    await cancelOrder(item.id)
-    item.status = OrderType.ConsultCancel
-    item.statusValue = '已取消'
-    showSuccessToast('取消成功')
-  } catch (error) {
-    showFailToast('取消失败')
-  } finally {
-    loading.value = false
-  }
-}
+// const loading = ref(false)
+// const cancelConsultOrder = async (item: ConsultOrderItem) => {
+//   loading.value = true
+//   try {
+//     await cancelOrder(item.id)
+//     item.status = OrderType.ConsultCancel
+//     item.statusValue = '已取消'
+//     showSuccessToast('取消成功')
+//   } catch (error) {
+//     showFailToast('取消失败')
+//   } finally {
+//     loading.value = false
+//   }
+// }
+const { loading, cancelConsultOrder } = useCancelOrder()
 
 // 删除订单
 const emit = defineEmits<{
   (e: 'on-delete', id: string): void
 }>()
-const delLoading = ref(false)
-const deleteConsultOrder = async (item: ConsultOrderItem) => {
-  delLoading.value = true
-  try {
-    await deleteOrder(item.id)
-    // 通知父组件，删除订单
-    emit('on-delete', item.id)
-    showSuccessToast('删除成功')
-  } catch (error) {
-    showFailToast('删除失败')
-  } finally {
-    delLoading.value = false
-  }
-}
+// const delLoading = ref(false)
+// const deleteConsultOrder = async (item: ConsultOrderItem) => {
+//   delLoading.value = true
+//   try {
+//     await deleteOrder(item.id)
+//     // 通知父组件，删除订单
+//     emit('on-delete', item.id)
+//     showSuccessToast('删除成功')
+//   } catch (error) {
+//     showFailToast('删除失败')
+//   } finally {
+//     delLoading.value = false
+//   }
+// }
+const { loading: delLoading, deleteConsultOrder } = useDeleteOrder(() => {
+  emit('on-delete', props.item.id)
+})
 </script>
 
 <template>

@@ -1,17 +1,34 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import type { ConsultOrderItem } from '@/types/consult'
 import { getConsultOrderDetail } from '@/services/consult'
 import { OrderType } from '@/enums'
 import { getIllnessTimeText, getConsultFlagText } from '@/utils/filter'
+import {
+  useCancelOrder,
+  useDeleteOrder,
+  useShowPrescription
+} from '@/composable'
 
 const route = useRoute()
+const router = useRouter()
 const item = ref<ConsultOrderItem>()
 onMounted(async () => {
   const res = await getConsultOrderDetail(route.params.id as string)
   item.value = res.data
 })
+
+//  取消订单
+const { loading, cancelConsultOrder } = useCancelOrder()
+
+// 删除订单
+const { loading: delLoading, deleteConsultOrder } = useDeleteOrder(() => {
+  router.push('/user/consult')
+})
+
+// 查看处方
+const { showPrescription } = useShowPrescription()
 </script>
 
 <template>
@@ -76,13 +93,85 @@ onMounted(async () => {
         />
       </van-cell-group>
     </div>
+    <!-- 待支付，倒计时提示 -->
+    <div class="detail-time" v-if="item.status === OrderType.ConsultPay">
+      请在
+      <van-count-down :time="item.countdown * 1000" />
+      内完成支付，超时订单将取消
+    </div>
     <div class="detail-action van-hairline--top">
       <div class="price">
         <span>需付款</span>
-        <span>￥39.00</span>
+        <span>￥{{ item.actualPayment.toFixed(2) }}</span>
       </div>
-      <van-button type="default" round>取消问诊</van-button>
+      <van-button
+        type="default"
+        round
+        :loading="loading"
+        @click="cancelConsultOrder(item!)"
+        >取消问诊</van-button
+      >
       <van-button type="primary" round>继续支付</van-button>
+    </div>
+    <div
+      class="detail-action van-hairline--top"
+      v-if="item.status === OrderType.ConsultWait"
+    >
+      <van-button
+        type="default"
+        round
+        :loading="loading"
+        @click="cancelConsultOrder(item!)"
+        >取消问诊</van-button
+      >
+      <van-button type="primary" round :to="`/room?orderId=${item.id}`"
+        >继续沟通</van-button
+      >
+    </div>
+    <div
+      class="detail-action van-hairline--top"
+      v-if="item.status === OrderType.ConsultChat"
+    >
+      <van-button
+        type="default"
+        round
+        v-if="item.prescriptionId"
+        @click="showPrescription(item?.prescriptionId)"
+        >查看处方</van-button
+      >
+      <van-button type="primary" round :to="`/room?orderId=${item.id}`"
+        >继续沟通</van-button
+      >
+    </div>
+    <div
+      class="detail-action van-hairline--top"
+      v-if="item.status === OrderType.ConsultComplete"
+    >
+      <cp-consult-more
+        :disabled="!item.prescriptionId"
+        @on-delete="deleteConsultOrder(item!)"
+        @on-preview="showPrescription(item?.prescriptionId)"
+      ></cp-consult-more>
+      <van-button type="default" round :to="`/room?orderId=${item.id}`"
+        >问诊记录</van-button
+      >
+      <van-button type="primary" round v-if="item.evaluateId"
+        >写评价</van-button
+      >
+      <van-button type="default" round v-else>查看评价</van-button>
+    </div>
+    <div
+      class="detail-action van-hairline--top"
+      v-if="item.status === OrderType.ConsultCancel"
+    >
+      <van-button
+        type="default"
+        round
+        :loading="delLoading"
+        @click="deleteConsultOrder(item!)"
+        >删除订单</van-button
+      >
+      <van-button type="primary" round to="/">咨询其他医生</van-button>
     </div>
   </div>
   <!-- 骨架屏 -->
@@ -232,5 +321,21 @@ onMounted(async () => {
 .van-cell {
   padding-left: 18px;
   padding-right: 18px;
+}
+.detail-time {
+  position: fixed;
+  left: 0;
+  bottom: 65px;
+  width: 100%;
+  height: 44px;
+  background-color: #fff7eb;
+  text-align: center;
+  line-height: 44px;
+  font-size: 13px;
+  color: #f2994a;
+  .van-count-down {
+    display: inline;
+    color: #f2994a;
+  }
 }
 </style>
