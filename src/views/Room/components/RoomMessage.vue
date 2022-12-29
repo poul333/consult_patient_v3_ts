@@ -1,27 +1,19 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
 import type { Message, Prescription } from '@/types/room'
-import { IllnessTime, MsgType, PrescriptionStatus } from '@/enums'
-import { timeOptions, flagOptions } from '@/services/constants'
+import { MsgType, PrescriptionStatus } from '@/enums'
 import type { Image } from '@/types/consult'
 import { showImagePreview, showToast } from 'vant'
 import { useUserStore } from '@/stores'
 import dayjs from 'dayjs'
-import { getPrescriptionPic } from '@/services/consult'
 import EvaluateCard from './EvaluateCard.vue'
+import { useShowPrescription } from '@/composable'
+import { getIllnessTimeText, getConsultFlagText } from '@/utils/filter'
 
 defineProps<{
   list: Message[]
 }>()
 
-// 获取患病时间文字
-const getIllnessTimeText = (time?: IllnessTime) => {
-  return timeOptions.find((item) => item.value === time)?.label
-}
-// 获取是否就诊过文字
-const getConsultFlagText = (flag?: 0 | 1) => {
-  return flagOptions.find((item) => item.value === flag)?.label
-}
 // 点击查看图片
 const onPreViewImage = (pictures?: Image[]) => {
   if (pictures && pictures.length) {
@@ -34,12 +26,7 @@ const store = useUserStore()
 const formatTime = (time: string) => dayjs(time).format('HH:mm')
 
 // 查看处方图片
-const showPrescription = async (id?: string) => {
-  if (id) {
-    const res = await getPrescriptionPic(id)
-    showImagePreview([res.data?.url])
-  }
-}
+const { showPrescription } = useShowPrescription()
 
 // 购买药品
 const router = useRouter()

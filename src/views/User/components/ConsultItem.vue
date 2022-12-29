@@ -1,23 +1,31 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import { OrderType } from '@/enums'
 import type { ConsultOrderItem } from '@/types/consult'
 import { cancelOrder, deleteOrder } from '@/services/consult'
 import { showFailToast, showSuccessToast } from 'vant'
+import { useShowPrescription } from '@/composable'
 
-const props = defineProps<{
+defineProps<{
   item: ConsultOrderItem
 }>()
-const showPopover = ref(false)
-const actions = computed(() => [
-  { text: '查看处方', disabled: !props.item.prescriptionId },
-  { text: '删除订单' }
-])
-const onSelect = (actions: { text: string }, i: number) => {
-  if (i === 1) {
-    deleteConsultOrder(props.item)
-  }
-}
+const { showPrescription } = useShowPrescription()
+// const showPopover = ref(false)
+// const actions = computed(() => [
+//   { text: '查看处方', disabled: !props.item.prescriptionId },
+//   { text: '删除订单' }
+// ])
+
+// const onSelect = (actions: { text: string }, i: number) => {
+//   // 删除订单
+//   if (i === 1) {
+//     deleteConsultOrder(props.item)
+//   }
+//   // 查看处方图片
+//   if (i === 0) {
+//     showPrescription(props.item.prescriptionId)
+//   }
+// }
 
 // 取消订单
 const loading = ref(false)
@@ -130,6 +138,7 @@ const deleteConsultOrder = async (item: ConsultOrderItem) => {
         size="small"
         v-if="item.prescriptionId"
         round
+        @click="showPrescription(item.prescriptionId)"
         >查看处方</van-button
       >
       <van-button
@@ -143,7 +152,7 @@ const deleteConsultOrder = async (item: ConsultOrderItem) => {
     </div>
     <!-- // 已完成：更多（查看处方，如果开了，删除订单）+问诊记录+（未评价?写评价:查看评价） -->
     <div class="foot" v-if="item.status === OrderType.ConsultComplete">
-      <div class="more">
+      <!-- <div class="more">
         <van-popover
           v-model:show="showPopover"
           :actions="actions"
@@ -152,7 +161,12 @@ const deleteConsultOrder = async (item: ConsultOrderItem) => {
         >
           <template #reference> 更多 </template>
         </van-popover>
-      </div>
+      </div> -->
+      <cp-consult-more
+        :disabled="!item.prescriptionId"
+        @on-delete="deleteConsultOrder(item)"
+        @on-preview="showPrescription(item.prescriptionId)"
+      ></cp-consult-more>
       <van-button
         class="gray"
         plain
