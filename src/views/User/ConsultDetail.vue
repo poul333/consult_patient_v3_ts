@@ -46,6 +46,9 @@ const onCopy = () => {
 watch(copied, () => {
   if (copied.value) return showSuccessToast('复制成功')
 })
+
+// 控制支付抽屉显示与否
+const show = ref(false)
 </script>
 
 <template>
@@ -128,7 +131,9 @@ watch(copied, () => {
         @click="cancelConsultOrder(item!)"
         >取消问诊</van-button
       >
-      <van-button type="primary" round>继续支付</van-button>
+      <van-button type="primary" @click="show = true" round
+        >继续支付</van-button
+      >
     </div>
     <div
       class="detail-action van-hairline--top"
@@ -190,6 +195,12 @@ watch(copied, () => {
       >
       <van-button type="primary" round to="/">咨询其他医生</van-button>
     </div>
+    <!-- 支付抽屉 -->
+    <cp-pay-sheet
+      :actual-payment="item.actualPayment"
+      :order-id="item.id"
+      v-model:show="show"
+    ></cp-pay-sheet>
   </div>
   <!-- 骨架屏 -->
   <div class="consult-detail-page" v-else>
