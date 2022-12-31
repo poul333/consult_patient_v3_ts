@@ -4,7 +4,7 @@ import { useRoute } from 'vue-router'
 import OrderMedical from './OrderMedical.vue'
 
 const route = useRoute()
-const { order } = useOrderDetail(route.params.id as string)
+const { order } = useOrderDetail(route.params?.id as string)
 </script>
 
 <template>
