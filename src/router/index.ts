@@ -107,6 +107,11 @@ const router = createRouter({
       path: '/order/logistics/:id',
       component: () => import('@/views/Order/OrderLogistics.vue'),
       meta: { title: '物流详情' }
+    },
+    {
+      path: '/login/callback',
+      component: () => import('@/views/Login/LoginCallback.vue'),
+      meta: { title: 'QQ登录-绑定手机' }
     }
   ]
 })
@@ -118,7 +123,7 @@ router.beforeEach((to) => {
   // 拦截到某个页面 => return '路由地址'
   const store = useUserStore()
   // 白名单
-  const whiteList = ['/login']
+  const whiteList = ['/login', '/login/callback']
   // 如果没有登录，且访问的不是白名单里面的路径，拦截到登录
   if (!store.user?.token && !whiteList.includes(to.path)) return '/login'
 })

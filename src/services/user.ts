@@ -40,3 +40,14 @@ export const daletePatient = (id: string) =>
 // 查询患者详情
 export const getPatientDetial = (id: string) =>
   request<Patient>(`patient/info/${id}`)
+
+// QQ登录
+export const loginByQQ = (openId: string) =>
+  request<User>('login/thirdparty', 'post', { openId, source: 'qq' })
+
+// 三方登录绑定手机
+export const bindMobile = (data: {
+  mobile: string
+  code: string
+  openId: string
+}) => request<User>('login/binding', 'post', data)
