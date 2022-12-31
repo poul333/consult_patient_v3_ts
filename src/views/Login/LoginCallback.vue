@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { bindMobile, loginByQQ, sendMobileCode } from '@/services/user'
-import { ref, onMounted, onUnmounted } from 'vue'
+import { bindMobile, loginByQQ } from '@/services/user'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { mobileRules, codeRules } from '@/utils/rules'
-import { type FormInstance, showSuccessToast } from 'vant'
+import { showSuccessToast } from 'vant'
 import type { User } from '@/types/user'
 import { useUserStore } from '@/stores'
+import { useSendMobileCode } from '@/composable'
 
 const openId = ref('')
 const isBind = ref(false)
@@ -31,25 +32,7 @@ onMounted(() => {
 // 短信验证码
 const mobile = ref('')
 const code = ref('')
-const form = ref<FormInstance | null>(null)
-const time = ref(0) // 倒计时
-let timerId: number = -1 // 定时器
-const send = async () => {
-  if (time.value > 0) return // 倒计时期间无法发送验证码
-  await form.value?.validate('mobile') // 校验手机号
-  await sendMobileCode(mobile.value, 'bindMobile') //发送请求
-
-  time.value = 60
-  if (timerId !== -1) clearInterval(timerId)
-  timerId = setInterval(() => {
-    time.value--
-    if (time.value <= 0) clearInterval(timerId)
-  }, 1000)
-}
-// 销毁定时器
-onUnmounted(() => {
-  clearInterval(timerId)
-})
+const { form, time, send } = useSendMobileCode(mobile, 'bindMobile')
 
 // 登录成功
 const store = useUserStore()

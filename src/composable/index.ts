@@ -1,4 +1,4 @@
-import { ref, onMounted } from 'vue'
+import { type Ref, ref, onMounted, onUnmounted } from 'vue'
 import type { ConsultOrderItem, FollowType } from '@/types/consult'
 import {
   cancelOrder,
@@ -6,10 +6,17 @@ import {
   followTarget,
   getPrescriptionPic
 } from '@/services/consult'
-import { showFailToast, showImagePreview, showSuccessToast } from 'vant'
+import {
+  showFailToast,
+  showImagePreview,
+  showSuccessToast,
+  type FormInstance
+} from 'vant'
 import { OrderType } from '@/enums'
 import type { OrderDetail } from '@/types/order'
 import { getMedicalOrderDetail } from '@/services/order'
+import { sendMobileCode } from '@/services/user'
+import type { CodeType } from '@/types/user'
 
 // 关注hook封装
 export const useFollow = (type: FollowType = 'doc') => {
@@ -91,4 +98,29 @@ export const useOrderDetail = (id: string) => {
     }
   })
   return { order, loading }
+}
+
+// 短信验证码hook
+export const useSendMobileCode = (mobile: Ref<string>, type: CodeType) => {
+  const form = ref<FormInstance | null>(null)
+  const time = ref(0) // 倒计时
+  let timerId: number = -1 // 定时器
+  const send = async () => {
+    if (time.value > 0) return // 倒计时期间无法发送验证码
+    await form.value?.validate('mobile') // 校验手机号
+    await sendMobileCode(mobile.value, type) //发送请求
+
+    time.value = 60
+    if (timerId !== -1) clearInterval(timerId)
+    timerId = setInterval(() => {
+      time.value--
+      if (time.value <= 0) clearInterval(timerId)
+    }, 1000)
+  }
+  // 销毁定时器
+  onUnmounted(() => {
+    clearInterval(timerId)
+  })
+
+  return { form, time, send }
 }

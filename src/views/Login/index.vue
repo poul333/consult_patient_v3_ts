@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { ref, onUnmounted, onMounted } from 'vue'
+import { ref } from 'vue'
 import { mobileRules, passwordRules, codeRules } from '@/utils/rules'
-import { showSuccessToast, showToast, type FormInstance } from 'vant'
-import { loginByCode, loginByPassword, sendMobileCode } from '@/services/user'
+import { showSuccessToast, showToast } from 'vant'
+import { loginByCode, loginByPassword } from '@/services/user'
 import { useUserStore } from '@/stores'
 import { useRoute, useRouter } from 'vue-router'
+import { useSendMobileCode } from '@/composable'
 
 const router = useRouter()
 const route = useRoute()
@@ -33,25 +34,28 @@ const login = async () => {
 // 密码或短信登录的切换
 const isPass = ref(true)
 const code = ref('')
-const form = ref<FormInstance | null>(null)
-const time = ref(0) // 倒计时
-let timerId: number = -1 // 定时器
-const send = async () => {
-  if (time.value > 0) return // 倒计时期间无法发送验证码
-  await form.value?.validate('mobile') // 校验手机号
-  await sendMobileCode(mobile.value, 'login') //发送请求
 
-  time.value = 60
-  if (timerId !== -1) clearInterval(timerId)
-  timerId = setInterval(() => {
-    time.value--
-    if (time.value <= 0) clearInterval(timerId)
-  }, 1000)
-}
-// 销毁定时器
-onUnmounted(() => {
-  clearInterval(timerId)
-})
+// const form = ref<FormInstance | null>(null)
+// const time = ref(0) // 倒计时
+// let timerId: number = -1 // 定时器
+// const send = async () => {
+//   if (time.value > 0) return // 倒计时期间无法发送验证码
+//   await form.value?.validate('mobile') // 校验手机号
+//   await sendMobileCode(mobile.value, 'login') //发送请求
+
+//   time.value = 60
+//   if (timerId !== -1) clearInterval(timerId)
+//   timerId = setInterval(() => {
+//     time.value--
+//     if (time.value <= 0) clearInterval(timerId)
+//   }, 1000)
+// }
+// // 销毁定时器
+// onUnmounted(() => {
+//   clearInterval(timerId)
+// })
+// 封装hook
+const { form, time, send } = useSendMobileCode(mobile, 'login')
 
 // onMounted(() => {
 //   // 组件渲染完毕，使用QC生成QQ登录按钮，目的得到跳转链接
