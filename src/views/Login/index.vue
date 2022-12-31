@@ -6,6 +6,7 @@ import { loginByCode, loginByPassword } from '@/services/user'
 import { useUserStore } from '@/stores'
 import { useRoute, useRouter } from 'vue-router'
 import { useSendMobileCode } from '@/composable'
+import axios from 'axios'
 
 const router = useRouter()
 const route = useRoute()
@@ -68,6 +69,9 @@ const { form, time, send } = useSendMobileCode(mobile, 'login')
 const qqUrl = `https://graph.qq.com/oauth2.0/authorize?client_id=102015968&response_type=token&scope=all&redirect_uri=${encodeURIComponent(
   import.meta.env.VITE_APP_CALLBACK + '/login/callback'
 )}`
+
+// 测试mock接口
+axios.get('/patient/message/list').then((res) => console.log('mock', res))
 </script>
 
 <template>
