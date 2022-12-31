@@ -132,7 +132,7 @@ const pay = async () => {
       :actual-payment="orderPre.actualPayment"
       v-model:show="show"
       :order-id="orderId"
-      pay-callback="http://localhost:5173/order/pay/result"
+      pay-callback="/order/pay/result"
     ></cp-pay-sheet>
   </div>
 </template>

@@ -4,12 +4,12 @@ import { getConsultOrderPayUrl } from '@/services/consult'
 import { showLoadingToast, showToast } from 'vant'
 import { ref } from 'vue'
 
-const { orderId, payCallback = 'http://127.0.0.1:5173/room' } = defineProps<{
+const props = defineProps<{
   actualPayment: number // 支持支付金额
   show: boolean // 控制抽屉显示与否
   orderId?: string
   onClose?: () => void // 关闭前要做的事情的回调
-  payCallback?: string // 支付回调地址
+  payCallback: string // 支付回调地址
 }>()
 
 // 修改抽屉显示与否
@@ -23,11 +23,11 @@ const paymentMethod = ref<0 | 1>()
 const pay = async () => {
   if (paymentMethod.value === undefined) return showToast('请选择支付方式')
   showLoadingToast('跳转支付')
-  if (orderId) {
+  if (props.orderId) {
     const res = await getConsultOrderPayUrl({
       paymentMethod: paymentMethod.value,
-      orderId: orderId,
-      payCallback
+      orderId: props.orderId,
+      payCallback: import.meta.env.VITE_APP_CALLBACK + props.payCallback
     })
     // 支付地址
     location.href = res.data.payUrl

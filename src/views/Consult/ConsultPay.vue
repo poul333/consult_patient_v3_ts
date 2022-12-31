@@ -159,6 +159,7 @@ onBeforeRouteLeave(() => {
       :order-id="orderId"
       :show="show"
       :on-close="onClose"
+      pay-callback="/room"
     ></cp-pay-sheet>
   </div>
   <div class="consult-pay-page" v-else>
